@@ -29,19 +29,6 @@ import android.util.TypedValue;
  */
 public class CropImageOptions implements Parcelable {
 
-  public static final Creator<CropImageOptions> CREATOR =
-      new Creator<CropImageOptions>() {
-        @Override
-        public CropImageOptions createFromParcel(Parcel in) {
-          return new CropImageOptions(in);
-        }
-
-        @Override
-        public CropImageOptions[] newArray(int size) {
-          return new CropImageOptions[size];
-        }
-      };
-
   /** The shape of the cropping window. */
   public CropImageView.CropShape cropShape;
 
@@ -222,6 +209,13 @@ public class CropImageOptions implements Parcelable {
   /** optional image resource to be used for crop menu crop icon instead of text */
   public int cropMenuCropButtonIcon;
 
+  /**
+   * 0: default,
+   * 1: pick photo without Chooser
+   * 2: capture photo
+   */
+  public int cropSourceFlag;
+
   /** Init options with defaults. */
   public CropImageOptions() {
 
@@ -283,15 +277,13 @@ public class CropImageOptions implements Parcelable {
     cropMenuCropButtonTitle = null;
 
     cropMenuCropButtonIcon = 0;
+    cropSourceFlag = 0;
   }
 
-  /** Create object from parcel. */
+
   protected CropImageOptions(Parcel in) {
-    cropShape = CropImageView.CropShape.values()[in.readInt()];
     snapRadius = in.readFloat();
     touchRadius = in.readFloat();
-    guidelines = CropImageView.Guidelines.values()[in.readInt()];
-    scaleType = CropImageView.ScaleType.values()[in.readInt()];
     showCropOverlay = in.readByte() != 0;
     showProgressBar = in.readByte() != 0;
     autoZoomEnabled = in.readByte() != 0;
@@ -316,14 +308,11 @@ public class CropImageOptions implements Parcelable {
     minCropResultHeight = in.readInt();
     maxCropResultWidth = in.readInt();
     maxCropResultHeight = in.readInt();
-    activityTitle = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(in);
     activityMenuIconColor = in.readInt();
     outputUri = in.readParcelable(Uri.class.getClassLoader());
-    outputCompressFormat = Bitmap.CompressFormat.valueOf(in.readString());
     outputCompressQuality = in.readInt();
     outputRequestWidth = in.readInt();
     outputRequestHeight = in.readInt();
-    outputRequestSizeOptions = CropImageView.RequestSizeOptions.values()[in.readInt()];
     noOutputImage = in.readByte() != 0;
     initialCropWindowRectangle = in.readParcelable(Rect.class.getClassLoader());
     initialRotation = in.readInt();
@@ -333,17 +322,14 @@ public class CropImageOptions implements Parcelable {
     rotationDegrees = in.readInt();
     flipHorizontally = in.readByte() != 0;
     flipVertically = in.readByte() != 0;
-    cropMenuCropButtonTitle = TextUtils.CHAR_SEQUENCE_CREATOR.createFromParcel(in);
     cropMenuCropButtonIcon = in.readInt();
+    cropSourceFlag = in.readInt();
   }
 
   @Override
   public void writeToParcel(Parcel dest, int flags) {
-    dest.writeInt(cropShape.ordinal());
     dest.writeFloat(snapRadius);
     dest.writeFloat(touchRadius);
-    dest.writeInt(guidelines.ordinal());
-    dest.writeInt(scaleType.ordinal());
     dest.writeByte((byte) (showCropOverlay ? 1 : 0));
     dest.writeByte((byte) (showProgressBar ? 1 : 0));
     dest.writeByte((byte) (autoZoomEnabled ? 1 : 0));
@@ -368,15 +354,12 @@ public class CropImageOptions implements Parcelable {
     dest.writeInt(minCropResultHeight);
     dest.writeInt(maxCropResultWidth);
     dest.writeInt(maxCropResultHeight);
-    TextUtils.writeToParcel(activityTitle, dest, flags);
     dest.writeInt(activityMenuIconColor);
     dest.writeParcelable(outputUri, flags);
-    dest.writeString(outputCompressFormat.name());
     dest.writeInt(outputCompressQuality);
     dest.writeInt(outputRequestWidth);
     dest.writeInt(outputRequestHeight);
-    dest.writeInt(outputRequestSizeOptions.ordinal());
-    dest.writeInt(noOutputImage ? 1 : 0);
+    dest.writeByte((byte) (noOutputImage ? 1 : 0));
     dest.writeParcelable(initialCropWindowRectangle, flags);
     dest.writeInt(initialRotation);
     dest.writeByte((byte) (allowRotation ? 1 : 0));
@@ -385,14 +368,26 @@ public class CropImageOptions implements Parcelable {
     dest.writeInt(rotationDegrees);
     dest.writeByte((byte) (flipHorizontally ? 1 : 0));
     dest.writeByte((byte) (flipVertically ? 1 : 0));
-    TextUtils.writeToParcel(cropMenuCropButtonTitle, dest, flags);
     dest.writeInt(cropMenuCropButtonIcon);
+    dest.writeInt(cropSourceFlag);
   }
 
   @Override
   public int describeContents() {
     return 0;
   }
+
+  public static final Creator<CropImageOptions> CREATOR = new Creator<CropImageOptions>() {
+    @Override
+    public CropImageOptions createFromParcel(Parcel in) {
+      return new CropImageOptions(in);
+    }
+
+    @Override
+    public CropImageOptions[] newArray(int size) {
+      return new CropImageOptions[size];
+    }
+  };
 
   /**
    * Validate all the options are withing valid range.
